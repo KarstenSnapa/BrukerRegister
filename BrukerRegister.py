@@ -1,4 +1,6 @@
+import argon2
 import pymysql.cursors
+
 
 connection = pymysql.connect(host='172.20.128.79',
                             user='karsten',
@@ -58,16 +60,16 @@ login()
 terminal = ''
 nybruker_epost = ''
 nybruker_navn = ''
-nybruker_passord = ''
 nybruker_tilgang = ''
 tilgang = ['bruker', 'ansatt', 'admin']
 
 
-def lag_bruker(nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang):
+def lag_bruker(nybruker_epost, nybruker_navn, nybruker_hashed_passord, nybruker_tilgang):
     with connection.cursor() as cursor:
         cursor.execute("INSERT INTO Liste (Epost, Navn, Passord, tilgang) VALUES (%s, %s, %s, %s)", (nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang))
         connection.commit()
     print("bruker lagd")
+    return nybruker_hashed_passord
 
 def list_brukere(sort_by):
     with connection.cursor() as cursor:
@@ -83,7 +85,7 @@ while Admin == True:
     terminal = ''
     nybruker_epost = ''
     nybruker_navn = ''
-    nybruker_passord = ''
+    nybruker_passord = b''
     nybruker_tilgang = ''
 
 
@@ -103,12 +105,14 @@ while Admin == True:
         print("skriv inn navn")
         nybruker_navn = input()
         print("skriv inn passord")
-        nybruker_passord = input()
+        nybruker_passord = input().encode('utf-8')
+        nybruker_hashed_passord = argon2.hash_password(nybruker_passord)
+        print(nybruker_hashed_passord)
         print("hvilken tilgang skal bruker ha? bruker/ansatt/admin")
         nybruker_tilgang = input().lower()
         print("nybruker tilgang er ", nybruker_tilgang)
         if nybruker_tilgang == 'bruker' or nybruker_tilgang == 'ansatt' or nybruker_tilgang == 'admin':
-            lag_bruker(nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang)
+            nybruker_hashed_passord = lag_bruker(nybruker_epost, nybruker_navn, nybruker_hashed_passord, nybruker_tilgang)
         else:
             print("kunne ikke lage bruker")
             print("ingen tilgang med navn:", nybruker_tilgang)
@@ -126,3 +130,4 @@ while Admin == True:
             list_brukere(sort_by)
         else:
             print("finner ingen tilgang med navn ", terminal)
+        
