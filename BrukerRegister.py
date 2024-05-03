@@ -23,7 +23,6 @@ def les_bruker(bruker_login):
         print("bruker ikke tilgjengelig")
         login()
 
-
 def les_passord():
     global forsøk_passord, Admin
     print("Skriv passord")
@@ -34,6 +33,7 @@ def les_passord():
     if passord_liste and passord_login in passord_liste['Passord']:
         print("du er logget inn!")
         Admin = True
+        print("Skriv HELP for hjelp")
     else:
         Admin = False
         print("feil passord")
@@ -60,6 +60,7 @@ nybruker_epost = ''
 nybruker_navn = ''
 nybruker_passord = ''
 nybruker_tilgang = ''
+tilgang = ['bruker', 'ansatt', 'admin']
 
 
 def lag_bruker(nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang):
@@ -67,6 +68,14 @@ def lag_bruker(nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang
     with connection.cursor() as cursor:
         cursor.execute("INSERT INTO Liste (Epost, Navn, Passord, tilgang) VALUES (%s, %s, %s, %s)", (nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang))
         connection.commit()
+
+def list_brukere(sort_by):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM Liste WHERE tilgang = %s", (sort_by))
+        bruker_liste = cursor.fetchall()
+    for bruker in bruker_liste:
+        print(bruker)
+
 
 
 
@@ -79,6 +88,15 @@ while Admin == True:
 
 
     terminal = input()
+
+    if terminal == 'HELP':
+        print("liste med mulige kommandoer")
+        print("")
+        print("CREATE USER")
+        print("")
+        print("USER LIST SORT BY (bruker/ansatt/admin)")
+        print("")
+
     if terminal == 'CREATE USER':
         print("skriv inn epost")
         nybruker_epost = input()
@@ -86,7 +104,6 @@ while Admin == True:
         nybruker_navn = input()
         print("skriv inn passord")
         nybruker_passord = input()
-
         print("hvilken tilgang skal bruker ha? bruker/ansatt/admin")
         nybruker_tilgang = input().lower()
         print("nybruker tilgang er ", nybruker_tilgang)
@@ -96,3 +113,16 @@ while Admin == True:
             print("kunne ikke lage bruker")
             print("ingen tilgang med navn:", nybruker_tilgang)
             nybruker_tilgang = ''
+
+    if terminal.startswith('USER LIST SORT BY'):
+        if terminal == 'USER LIST SORT BY bruker':
+            sort_by = 'bruker'
+            list_brukere(sort_by)
+        elif terminal == 'USER LIST SORT BY ansatt':
+            sort_by = 'ansatt'
+            list_brukere(sort_by)
+        elif terminal == 'USER LIST SORT BY admin':
+            sort_by = 'admin'
+            list_brukere(sort_by)
+        else:
+            print("finner ingen tilgang med navn ", terminal)
