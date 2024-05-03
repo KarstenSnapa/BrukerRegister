@@ -64,10 +64,10 @@ tilgang = ['bruker', 'ansatt', 'admin']
 
 
 def lag_bruker(nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang):
-    print("lager bruker")
     with connection.cursor() as cursor:
         cursor.execute("INSERT INTO Liste (Epost, Navn, Passord, tilgang) VALUES (%s, %s, %s, %s)", (nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang))
         connection.commit()
+    print("bruker lagd")
 
 def list_brukere(sort_by):
     with connection.cursor() as cursor:
