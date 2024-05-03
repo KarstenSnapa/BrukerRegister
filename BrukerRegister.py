@@ -10,6 +10,7 @@ connection = pymysql.connect(host='172.20.128.79',
 bruker_login = ''
 passord_login = ''
 forsøk_passord = 10
+Admin = False
 
 def les_bruker(bruker_login):
     with connection.cursor() as cursor:
@@ -24,7 +25,7 @@ def les_bruker(bruker_login):
 
 
 def les_passord():
-    global forsøk_passord
+    global forsøk_passord, Admin
     print("Skriv passord")
     passord_login = input()
     with connection.cursor() as cursor:
@@ -32,7 +33,9 @@ def les_passord():
         passord_liste = cursor.fetchone()
     if passord_liste and passord_login in passord_liste['Passord']:
         print("du er logget inn!")
+        Admin = True
     else:
+        Admin = False
         print("feil passord")
         print(forsøk_passord, "forsøk igjen på riktig passord")
         forsøk_passord -= 1
@@ -48,5 +51,48 @@ def login():
     bruker_login = input()
     les_bruker(bruker_login)
 
-
 login()
+
+
+
+terminal = ''
+nybruker_epost = ''
+nybruker_navn = ''
+nybruker_passord = ''
+nybruker_tilgang = ''
+
+
+def lag_bruker(nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang):
+    print("lager bruker")
+    with connection.cursor() as cursor:
+        cursor.execute("INSERT INTO Liste (Epost, Navn, Passord, tilgang) VALUES (%s, %s, %s, %s)", (nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang))
+        connection.commit()
+
+
+
+while Admin == True:
+    terminal = ''
+    nybruker_epost = ''
+    nybruker_navn = ''
+    nybruker_passord = ''
+    nybruker_tilgang = ''
+
+
+    terminal = input()
+    if terminal == 'CREATE USER':
+        print("skriv inn epost")
+        nybruker_epost = input()
+        print("skriv inn navn")
+        nybruker_navn = input()
+        print("skriv inn passord")
+        nybruker_passord = input()
+
+        print("hvilken tilgang skal bruker ha? bruker/ansatt/admin")
+        nybruker_tilgang = input().lower()
+        print("nybruker tilgang er ", nybruker_tilgang)
+        if nybruker_tilgang == 'bruker' or nybruker_tilgang == 'ansatt' or nybruker_tilgang == 'admin':
+            lag_bruker(nybruker_epost, nybruker_navn, nybruker_passord, nybruker_tilgang)
+        else:
+            print("kunne ikke lage bruker")
+            print("ingen tilgang med navn:", nybruker_tilgang)
+            nybruker_tilgang = ''
