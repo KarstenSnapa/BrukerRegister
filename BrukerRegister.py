@@ -17,15 +17,16 @@ def les_bruker(bruker_login):
         navn_liste = cursor.fetchone()
     if navn_liste and bruker_login in navn_liste['Navn']:
         print("bruker finnes")
-        print("Skriv passord")
-        passord_login = input()
-        les_passord(passord_login)
+        les_passord()
     else:
         print("bruker ikke tilgjengelig")
-        les_bruker(bruker_login)
+        login()
 
 
-def les_passord(passord_login):
+def les_passord():
+    global forsøk_passord
+    print("Skriv passord")
+    passord_login = input()
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM Liste WHERE Passord = %s", (passord_login))
         passord_liste = cursor.fetchone()
@@ -35,7 +36,7 @@ def les_passord(passord_login):
         print("feil passord")
         print(forsøk_passord, "forsøk igjen på riktig passord")
         forsøk_passord -= 1
-        if forsøk_passord > 0:
+        if forsøk_passord != 0:
             les_passord()
         else:
             print("Du er tom for forsøk!")
